@@ -41,6 +41,10 @@
     color: #6495ED;
 }
 
+.menuName {
+    max-width: 200px;
+}
+
 .navLink {
     text-decoration: none;
     padding: 1rem;
@@ -58,6 +62,12 @@
     color: #6495ED;
 }
 
+.hamburgerLogo {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
 @media (min-width: 900px) {
     .hamburger {
         display: none;
@@ -66,9 +76,12 @@
 
 @media (max-width: 899px) {
     .menu {
-        display: none;
         flex-direction: column;
         align-items: unset;
+    }
+
+    .menu li {
+        display: none;
     }
 
     .navbar {
@@ -76,10 +89,6 @@
         top: unset;
         height: unset;
         flex-direction: column;
-    }
-
-    .menu-name {
-        display: none;
     }
 }
 
