@@ -4,11 +4,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: darkturquoise;
+    background: #50B3F2;
 }
 
 .blueBackground {
-    background: darkturquoise;
+    background: #50B3F2;
     height: 100%;
 }
 
@@ -38,7 +38,7 @@
     margin: 0;
     display: flex;
     align-items: center;
-    color: #6495ED;
+    color: #50B3F2;
 }
 
 .menuName {
@@ -59,7 +59,7 @@
     font-size: 1.5rem;
     font-family: "Exo 2";
     font-weight: bold;
-    color: #6495ED;
+    color: #50B3F2;
 }
 
 .hamburgerLogo {
@@ -104,7 +104,7 @@
 
 .menu > .navLinkSelected {
     color: #152535;
-    background: #6495ED;
+    background: #50B3F2;
 }
 
 .main {
