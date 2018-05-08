@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "webpack && cp src/index.html docs/",
+    "build": "webpack && cp src/*.html docs/ && cp -a images/ docs/ && cp src/saturn.css docs/ && cp src/hamburger-menu.js docs/",
     "serve": "http-server docs"
   },
   "author": "",

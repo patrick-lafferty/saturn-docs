@@ -27,10 +27,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Saturn from './saturn.js';
+import DocumentationViewer from './doc-viewer.js';
 
 ReactDOM.render(
-    <Saturn />,
+    <DocumentationViewer />,
     document.getElementById('root')
 );
 

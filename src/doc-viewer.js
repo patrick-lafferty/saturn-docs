@@ -28,14 +28,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import React, {Component} from 'react';
 import style from './saturn.css';
 
-class Saturn extends Component {
+class DocumentationViewer extends Component {
     render() {
         return(
-            <div className={style.Saturn}>
-                <h1>Saturn</h1>
-            </div>
+            <div className={style.blueBackground}>
+                    <main className={style.main}>
+                        <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                        </p>
+                    </main>
+                    </div>
         );
     }
 }
 
-export default Saturn;
+export default DocumentationViewer;
