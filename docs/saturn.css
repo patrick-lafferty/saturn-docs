@@ -109,7 +109,12 @@
 
 .main {
     display: flex;
+    flex-direction: column;
     justify-content: center;
+}
+
+.main > * {
+    padding: 1rem;
 }
 
 .logoWrapper {
@@ -121,4 +126,48 @@
 
 .logo {
     max-width: 800px;
+    max-height: 300px;
+}
+
+.tag {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: 1rem;
+}
+
+.tagLine {
+    font-size: 2.5rem;
+    color: #152515;
+    font-family: "Oswald";
+}
+
+.large {
+    font-size: 3.5rem;
+}
+
+.tagBrief {
+    font-size: 1.6rem;
+    color: #152515;
+    font-family: "Exo 2";
+    line-height: 1.618;
+}
+
+.tagHolder {
+    display: flex;
+}
+
+.dark {
+    background: #152515;
+    color: #50B3F2; 
+}
+
+.darkBlue {
+    background: #152535;
+    color: #50B3F2; 
+}
+
+.centered {
+    align-self: center;
+    justify-self: center;
 }
