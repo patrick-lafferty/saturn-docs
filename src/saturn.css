@@ -181,15 +181,18 @@
 }
 
 .screenshot {
-    margin: 1rem;
+    margin: 1rem 0rem;
     display: flex;
-    align-items: center;
+    line-height: 1.618;
 }
 
 .screenshotDescription {
     font-size: 1.4rem;
     font-family: "Exo 2";
-    color: #152515;
     width: 50%;
     padding: 1rem;
+}
+
+.screenshotImage {
+    max-width: 100%;
 }
