@@ -179,3 +179,17 @@
     align-self: center;
     justify-self: center;
 }
+
+.screenshot {
+    margin: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.screenshotDescription {
+    font-size: 1.4rem;
+    font-family: "Exo 2";
+    color: #152515;
+    width: 50%;
+    padding: 1rem;
+}
