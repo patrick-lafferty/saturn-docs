@@ -136,6 +136,14 @@
     padding: 1rem;
 }
 
+.horizontalTag {
+    flex-direction: row;
+}
+
+.horizontalTag > .tagLine {
+    flex: 1 0 40%;
+}
+
 .tagLine {
     font-size: 2.5rem;
     color: #152515;
