@@ -228,15 +228,31 @@ footer {
         padding: unset;
         font-size: 1.2rem;
     }
+
+    footer {
+        display: block;
+        height: unset;
+    }
+
+    .footerCopyright {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 1rem 0rem;
+    }
+
+    .footerCopyright > p {
+        margin: 0rem;
+    }
+
+    .footerLinks {
+        width: unset;
+    }
 }
 
 @media (max-width: 599px) {
     .saturn {
         width: 100%;
-    }
-
-    .main {
-        /*width: 90%;*/
     }
 
     .main > * {
@@ -268,6 +284,10 @@ footer {
     .horizontalTag > .tagLine {
         flex: unset;
         width: 9rem;
+    }
+
+    p {
+        font-size: 1.2rem;
     }
 }
 
