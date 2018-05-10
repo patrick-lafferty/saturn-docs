@@ -209,7 +209,11 @@ footer {
 
     .menu li {
         display: none;
-        padding: 1rem;
+        padding: 0.5rem;
+    }
+
+    .navlink {
+        display: block;
     }
 
     .navbar {
