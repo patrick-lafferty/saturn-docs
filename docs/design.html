@@ -24,7 +24,80 @@
                 
         </nav>
 
-        <main>Todo</main>
+        <main class="main">
+           
+            <section class="lightBlue">
+
+                <h1>Overview</h1> 
+
+                <p>
+                    Saturn is built around a 32-bit <a href="https://en.wikipedia.org/wiki/Microkernel">microkernel</a>.
+                    The kernel itself is small and responsible for only a few key features including task scheduling,
+                    memory management and inter-process communication. All other features (drivers, filesystems, GUI)
+                    are handled by isolated ring-3 processes called services. Applications and services communicate
+                    via asynchronous message passing.
+                </p>
+
+            </section>
+
+            <section class="darkBlue">
+                <h1>Vostok</h1>
+
+                <p>
+                    Saturn uses a <a href="https://en.wikipedia.org/wiki/Virtual_file_system">Virtual File System</a> to
+                    provide a uniform interface to systems exposing not just files but objects too. Any system can
+                    mount itself somewhere in the root hierarchy, and any IO requests to a child of that mount point
+                    get routed to the appropriate system. Applications can also mount themselves to expose a Vostok
+                    Object for easy ad-hoc IPC.
+                </p>
+
+                <p>
+                    Vostok is Saturn's Virtual Object System. It introduces the concept of objects that
+                    can be accessed like files via the VFS. Objects can have properties as well as callable 
+                    functions, providing an <a href="https://en.wikipedia.org/wiki/Remote_procedure_call">RPC</a> 
+                    mechanism. Consider an object to be a directory; properties would be files (or directories in 
+                    the case of nested objects) that can be read or written to. Functions can be similarly read 
+                    from and written to, with different semantics: reading a function will get the function's 
+                    signature, while writing to the function executes the function with optionally supplied 
+                    (and type-checked) arguments. 
+                </p>
+                
+                <p>
+                    <a href="https://en.wikipedia.org/wiki/Type_introspection">Introspection</a> plays a key role
+                    in Vostok objects. Reading the object itself returns a list of all the properties (and their types)
+                    as well as any functions (and signatures) the object supports. This promotes discoverability
+                    by providing a convenient mechanism to examine objects.
+                </p>
+
+            </section>
+
+            <section class="lightBlue">
+                <h1>Apollo</h1>
+
+                <p>
+                    Apollo is Saturn's graphical UI framework. It uses a <a href="https://en.wikipedia.org/wiki/Tiling_window_manager">
+                    tiling window manager</a> that splits up screen space into a hierarchy of tiles (application windows) and
+                    containers that arrange tiles horizontally or vertically.  One of the main goals of Apollo is to support rapid UI 
+                    prototyping. To accomplish this, Apollo uses a declarative layout language called Mercury. By editing Mercury files 
+                    you can easily create and modify an application's UI.
+                </p>
+
+                <p>
+                    Apollo makes heavy use of <a href="https://en.wikipedia.org/wiki/Data_binding">databinding</a>. 
+                    Certain UI elements like Labels expose properties that are 'bindable', such as caption and 
+                    background. By defining properties in an application and then 'binding' them to elements, 
+                    the appropriate UI element updates automatically whenever the property's value changes.
+                </p>
+
+                <p>
+                    Templates provide a convenient way of defining how user-defined classes should be displayed by Apollo.
+                    A template can be any UI element, such as a label, with appropriate bindings to the class's properties.
+                    By providing a template and an item source for collection elements (ie grid, list view), Apollo
+                    instantiates the template for each item in the source and sets up the bindings.
+                </p>
+
+            </section>
+        </main>
 
         <footer class="darkBlue">
             <div class="footerLinks">

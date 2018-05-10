@@ -116,6 +116,17 @@
     font-family: "Oswald";
 }
 
+h1 {
+    font-family: "Oswald";
+    font-size: 2.5rem;
+}
+
+p {
+    font-family: "Exo 2";
+    line-height: 1.618;
+    font-size: 1.4rem;
+}
+
 .large {
     font-size: 3.5rem;
 }
@@ -139,6 +150,11 @@
 .darkBlue {
     background: #152535;
     color: #50B3F2; 
+}
+
+.lightBlue {
+    color: #152535;
+    background: #50B3F2; 
 }
 
 .centered {
