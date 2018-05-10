@@ -68,39 +68,7 @@
     align-items: center;
 }
 
-@media (min-width: 900px) {
-    .hamburger {
-        display: none;
-    }
-}
 
-@media (max-width: 899px) {
-    .menu {
-        flex-direction: column;
-        align-items: unset;
-    }
-
-    .menu li {
-        display: none;
-    }
-
-    .navbar {
-        position: unset;
-        top: unset;
-        height: unset;
-        flex-direction: column;
-    }
-}
-
-@media (max-width: 599px) {
-    .saturn {
-        width: 100%;
-    }
-
-    .main {
-        width: 90%;
-    }
-}
 
 .menu > .navLinkSelected {
     color: #152535;
@@ -195,4 +163,48 @@
 
 .screenshotImage {
     max-width: 100%;
+}
+
+@media (min-width: 900px) {
+    .hamburger {
+        display: none;
+    }
+}
+
+@media (max-width: 899px) {
+    .menu {
+        flex-direction: column;
+        align-items: unset;
+    }
+
+    .menu li {
+        display: none;
+    }
+
+    .navbar {
+        position: unset;
+        top: unset;
+        height: unset;
+        flex-direction: column;
+    }
+
+    .screenshot {
+        flex-direction: column;
+    }
+
+    .screenshotDescription {
+        width: unset;
+        padding: unset;
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 599px) {
+    .saturn {
+        width: 100%;
+    }
+
+    .main {
+        /*width: 90%;*/
+    }
 }
