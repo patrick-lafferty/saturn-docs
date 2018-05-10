@@ -39,6 +39,7 @@
     display: flex;
     align-items: center;
     color: #50B3F2;
+    padding: 1rem;
 }
 
 .menuName {
@@ -67,8 +68,6 @@
     justify-content: space-around;
     align-items: center;
 }
-
-
 
 .menu > .navLinkSelected {
     color: #152535;
@@ -206,5 +205,36 @@
 
     .main {
         /*width: 90%;*/
+    }
+
+    .main > * {
+        padding: 0.5rem;
+    }
+
+    .tagHolder {
+        flex-direction: column;
+        padding: 0rem;
+    }
+
+    .tag {
+        padding: unset;
+    }
+
+    .tagLine {
+        font-size: 1.8rem;
+    }
+
+    .tagBrief {
+        padding: 0.5rem;
+        font-size: 1.5rem;
+    }
+
+    .large {
+        font-size: 2.3rem;
+    }
+
+    .horizontalTag > .tagLine {
+        flex: unset;
+        width: 9rem;
     }
 }
