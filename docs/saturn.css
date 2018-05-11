@@ -185,6 +185,10 @@ footer {
 Temp documentation prototype
 */
 
+.root {
+    width: 100%;
+}
+
 .browser {
     display: grid;
     grid-template-areas: 
@@ -192,9 +196,11 @@ Temp documentation prototype
         "list viewer";
     grid-template-columns: 2fr 5fr;
     width: 100%;
-    margin: 1rem;
+    margin: 1rem 0rem;
     border: 3px solid #152535;
     box-sizing: border-box;
+    height: 35rem;
+    grid-template-rows: auto 1fr;
 }
 
 .browserMenu {
@@ -248,6 +254,12 @@ Temp documentation prototype
     display: flex;
     flex-direction: column;
     grid-area: list;
+    padding: 0rem;
+}
+
+li {
+    list-style: none;
+    cursor: pointer;
 }
 
 .searchResult {
