@@ -34,7 +34,8 @@ class DocumentationViewer extends Component {
             <div className={style.blueBackground}>
                     <main className={style.main}>
                         <p>
-                            Todo
+                            Documentation will be a ReactJS source code/documentation browser,
+                            it will look like the template below. 
                         </p>
                     </main>
                     </div>
