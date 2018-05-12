@@ -63,6 +63,29 @@ class File extends Component {
     }
 }
 
+class Directory extends Component {
+
+    constructor(props) {
+        super(props);
+        this.callSelect = (file) => {
+            this.props.select(file);
+        };
+    }
+
+    render() {
+        return (
+            <ul className={`directoryContents`}>
+                {this.props.files.map((file) => 
+                    <div className={`searchResult directoryChild`} onClick={this.callSelect.bind(this, file)}>
+                        <div className={`resultType ${file.classType}`}></div>
+                        <p>{file.name}</p>
+                    </div>
+                )} 
+            </ul>
+        );
+    }
+}
+
 /*
 Can be a directory, file, or a class
 */
@@ -94,6 +117,10 @@ class Renderable extends Component {
                 return <File functions={this.props.item.contents.functions} />;
                 break;
             }
+            case 'dir': {
+                return <Directory files={this.props.item.contents.files} select={this.props.select}/>;
+                break;
+            }
         }
 
     }
@@ -104,11 +131,12 @@ class DocumentationViewer extends Component {
     constructor(props) {
         super(props);
 
-        let items = [
+        let dir = [
             {
                 type: "file",
                 classType: "fileType",
                 name: "vostok.cpp",
+                fullPath: "/vfs/vostok.cpp",
 
                 contents: {
                     functions: [
@@ -127,6 +155,7 @@ class DocumentationViewer extends Component {
                 type: "file",
                 classType: "fileType",
                 name: "kernel.cpp",
+                fullPath: "/kernel.cpp",
 
                 contents: {
                     functions: [
@@ -142,6 +171,7 @@ class DocumentationViewer extends Component {
                 type: "file",
                 classType: "fileType",
                 name: "ipc.cpp",
+                fullPath: "/ipc.cpp",
 
                 contents: {
                     functions: [
@@ -163,7 +193,22 @@ class DocumentationViewer extends Component {
             }
         ];
 
-        this.renderables = items.map((item) => <Renderable item={item} />);
+        let items = [
+            {
+                type: "dir",
+                classType: "dirType",
+                name: "services",
+                fullPath: "/services",
+
+                contents: {files: dir} 
+            }
+        ];
+
+        this.select = (file) => {
+            console.log(file);
+        };
+
+        this.renderables = items.map((item) => <Renderable item={item} select={this.select} />);
         this.state = {rend: this.renderables[0], index: 0};
 
         this.handleClick = function (index, e) {
