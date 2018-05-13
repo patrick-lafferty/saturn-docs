@@ -76,7 +76,7 @@ class Directory extends Component {
         return (
             <ul className={`directoryContents`}>
                 {this.props.files.map((file, index) => 
-                    <div className={`searchResult directoryChild`} onClick={this.callSelect.bind(this, file, index)}>
+                    <div key={index} className={`searchResult directoryChild`} onClick={this.callSelect.bind(this, file, index)}>
                         <div className={`resultType ${file.classType}`}></div>
                         <p>{file.name}</p>
                     </div>
@@ -121,103 +121,89 @@ class Renderable extends Component {
     }
 }
 
+/*
+from MDN
+*/
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+}
+
+let names = [];
+
+for (let i = 200; i > 0; i--) {
+    names.push(i.toString());
+}
+
+function getName() {
+    return names.pop();
+}
+
+function createDummySig(name) {
+    let types = ["int", "void", "float"];
+
+    return types[getRandomInt(0, 3)] + " " + name + "()";
+}
+
+function createDummyFile() {
+
+    let name = getName();
+
+    let file = {
+        type: "file",
+        classType: "fileType",
+        name: name + ".cpp",
+
+        contents: [
+            {
+                signature: createDummySig(name),
+                description: "the main entry point"
+            }
+        ]
+    };
+
+    return file;
+}
+
+function createDummyDir(name, remaining) {
+
+    let numberOfChildren = getRandomInt(1, 5);
+
+    let dir = {
+        type: "dir",
+        classType: "dirType",
+        name: name,
+        contents: []
+    };
+
+    if (remaining > 0) {
+
+        for (let i = 0; i < numberOfChildren; i++) {
+            dir.contents.push(createDummyDir(remaining - 1));
+        }
+    }
+
+    numberOfChildren = getRandomInt(3, 8);
+
+    for (let i = 0; i < numberOfChildren; i++) {
+        dir.contents.push(createDummyFile());
+    }
+
+    return dir;
+}
+
 class DocumentationViewer extends Component {
 
     constructor(props) {
         super(props);
 
-        let dir = [
-            {
-                type: "file",
-                classType: "fileType",
-                name: "vostok.cpp",
-                fullPath: "/vfs/vostok.cpp",
+        let kernel = createDummyDir("kernel");
+        let services = createDummyDir("services");
+        let applications = createDummyDir("applications");
 
-                contents:  [
-                        {
-                            signature: "void func(int arg)",
-                            description: "describing the description"
-                        },
-                        {
-                            signature: "int foo(char bar)",
-                            description: "another function"
-                        }
-                    ]
-                
-            },
-            {
-                type: "file",
-                classType: "fileType",
-                name: "kernel.cpp",
-                fullPath: "/kernel.cpp",
-
-                contents: [
-                        {
-                            signature: "int kernel_main(int arg)",
-                            description: "the main entry point"
-                        }
-                        
-                    ]
-                
-            }, 
-            {
-                type: "file",
-                classType: "fileType",
-                name: "ipc.cpp",
-                fullPath: "/ipc.cpp",
-
-                contents:  [
-                    {
-                        signature: "int somethingA(int arg)",
-                        description: "textA"
-                    },
-                    {
-                        signature: "int somethingB(int arg)",
-                        description: "textB"
-                    },
-                    {
-                        signature: "int somethingC(int arg)",
-                        description: "textC"
-                    }
-                    
-                ]
-                
-            }
-        ];
-
-        let dirs = [
-            {
-                type: "dir",
-                classType: "dirType",
-                name: "services",
-                fullPath: "/services",
-
-                contents: dir 
-            },
-            {
-                type: "file",
-                classType: "fileType",
-                name: "example.txt",
-                fullPath: "/example.txt",
-
-                contents: [
-                    {
-                        signature: "void something(int arg)",
-                        description: "nothing"
-                    }
-                    
-                ]
-            }
-        ];
-
-        let topLevel = {
-            type: "dir",
-            classType: "dirType",
-            name: "/",
-            fullPath: "/",
-
-            contents: dirs 
-        };
+        let topLevel = createDummyDir("/", 0);
+        topLevel.contents = [applications, services, kernel];
 
         this.state = {
             breadcrumbs: [topLevel],
@@ -250,31 +236,7 @@ class DocumentationViewer extends Component {
                 top: parent,
                 index: index
             });
-
         };
-
-        /*this.select = (file) => {
-            this.setState(Object.assign(this.state, {
-                breadcrumbs: file.fullPath.split("/")})
-            );
-        };
-
-        this.renderables = items.map((item) => <Renderable item={item} select={this.select} />);
-        this.state = {rend: this.renderables[0], index: 0, breadcrumbs: [""]};
-
-        this.handleListItemClick = function (index, e) {
-
-            this.setState({
-                rend: this.renderables[index],
-                index: index,
-                breadcrumbs: this.state.breadcrumbs,
-                selectableItems: items
-            });
-        };
-
-        this.state.selectableItems = items.map((item, index) => 
-                <ListItem item={item} />);
-        */
     }
 
     render() {
@@ -296,7 +258,7 @@ class DocumentationViewer extends Component {
 
                                 {
                                     this.state.breadcrumbs.map((crumb, index) => 
-                                        <div className={`breadcrumb`}>
+                                        <div key={index} className={`breadcrumb`}>
                                             <a className={`breadcrumbLink`}
                                                 onClick={this.handleBreadcrumClick.bind(this, index)}
                                              >{crumb.name}</a>
