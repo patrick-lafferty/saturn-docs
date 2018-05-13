@@ -67,16 +67,16 @@ class Directory extends Component {
 
     constructor(props) {
         super(props);
-        this.callSelect = (file) => {
-            this.props.select(file);
+        this.callSelect = (file, index) => {
+            this.props.select(file, index);
         };
     }
 
     render() {
         return (
             <ul className={`directoryContents`}>
-                {this.props.files.map((file) => 
-                    <div className={`searchResult directoryChild`} onClick={this.callSelect.bind(this, file)}>
+                {this.props.files.map((file, index) => 
+                    <div className={`searchResult directoryChild`} onClick={this.callSelect.bind(this, file, index)}>
                         <div className={`resultType ${file.classType}`}></div>
                         <p>{file.name}</p>
                     </div>
@@ -91,17 +91,12 @@ Can be a directory, file, or a class
 */
 class ListItem extends Component {
 
-    constructor(props) {
-        super(props);
-        this.item = props.item;
-    }
-
     render() {
         return (
             <div className={`searchResult`}>
-                <span className={`resultType ${this.item.classType}`}>
-                    {this.item.type}</span> 
-                    {this.item.name}
+                <span className={`resultType ${this.props.item.classType}`}>
+                    {this.props.item.type}</span> 
+                    {this.props.item.name}
             </div>
         );
     }
@@ -114,11 +109,11 @@ class Renderable extends Component {
 
         switch (this.props.item.type) {
             case 'file': {
-                return <File functions={this.props.item.contents.functions} />;
+                return <File functions={this.props.item.contents} />;
                 break;
             }
             case 'dir': {
-                return <Directory files={this.props.item.contents.files} select={this.props.select}/>;
+                return <Directory files={this.props.item.contents} select={this.props.select}/>;
                 break;
             }
         }
@@ -138,8 +133,7 @@ class DocumentationViewer extends Component {
                 name: "vostok.cpp",
                 fullPath: "/vfs/vostok.cpp",
 
-                contents: {
-                    functions: [
+                contents:  [
                         {
                             signature: "void func(int arg)",
                             description: "describing the description"
@@ -149,7 +143,7 @@ class DocumentationViewer extends Component {
                             description: "another function"
                         }
                     ]
-                }
+                
             },
             {
                 type: "file",
@@ -157,15 +151,14 @@ class DocumentationViewer extends Component {
                 name: "kernel.cpp",
                 fullPath: "/kernel.cpp",
 
-                contents: {
-                    functions: [
+                contents: [
                         {
                             signature: "int kernel_main(int arg)",
                             description: "the main entry point"
                         }
                         
                     ]
-                }
+                
             }, 
             {
                 type: "file",
@@ -173,38 +166,94 @@ class DocumentationViewer extends Component {
                 name: "ipc.cpp",
                 fullPath: "/ipc.cpp",
 
-                contents: {
-                    functions: [
-                        {
-                            signature: "int somethingA(int arg)",
-                            description: "textA"
-                        },
-                        {
-                            signature: "int somethingB(int arg)",
-                            description: "textB"
-                        },
-                        {
-                            signature: "int somethingC(int arg)",
-                            description: "textC"
-                        }
-                        
-                    ]
-                }
+                contents:  [
+                    {
+                        signature: "int somethingA(int arg)",
+                        description: "textA"
+                    },
+                    {
+                        signature: "int somethingB(int arg)",
+                        description: "textB"
+                    },
+                    {
+                        signature: "int somethingC(int arg)",
+                        description: "textC"
+                    }
+                    
+                ]
+                
             }
         ];
 
-        let items = [
+        let dirs = [
             {
                 type: "dir",
                 classType: "dirType",
                 name: "services",
                 fullPath: "/services",
 
-                contents: {files: dir} 
+                contents: dir 
+            },
+            {
+                type: "file",
+                classType: "fileType",
+                name: "example.txt",
+                fullPath: "/example.txt",
+
+                contents: [
+                    {
+                        signature: "void something(int arg)",
+                        description: "nothing"
+                    }
+                    
+                ]
             }
         ];
 
-        this.select = (file) => {
+        let topLevel = {
+            type: "dir",
+            classType: "dirType",
+            name: "/",
+            fullPath: "/",
+
+            contents: dirs 
+        };
+
+        this.state = {
+            breadcrumbs: [topLevel],
+            top: topLevel,
+            index: 0
+        };
+
+        this.handleListItemClick = function (index, e) {
+            this.setState(Object.assign(this.state, {index: index}));
+        }
+
+        this.handleBreadcrumClick = index => {
+            let crumbs = this.state.breadcrumbs.slice(0, index + 1);
+
+            this.setState({
+                breadcrumbs: crumbs,
+                top: crumbs[crumbs.length - 1],
+                index: 0
+            });
+        };
+
+        this.renderableSelected = (file, index) => {
+
+            let parent = this.state.top.contents[this.state.index];
+            let crumbs = this.state.breadcrumbs;
+            crumbs.push(parent);
+
+            this.setState({
+                breadcrumbs: crumbs,
+                top: parent,
+                index: index
+            });
+
+        };
+
+        /*this.select = (file) => {
             this.setState(Object.assign(this.state, {
                 breadcrumbs: file.fullPath.split("/")})
             );
@@ -213,17 +262,19 @@ class DocumentationViewer extends Component {
         this.renderables = items.map((item) => <Renderable item={item} select={this.select} />);
         this.state = {rend: this.renderables[0], index: 0, breadcrumbs: [""]};
 
-        this.handleClick = function (index, e) {
+        this.handleListItemClick = function (index, e) {
 
             this.setState({
                 rend: this.renderables[index],
                 index: index,
-                breadcrumbs: this.state.breadcrumbs
+                breadcrumbs: this.state.breadcrumbs,
+                selectableItems: items
             });
         };
 
-        this.items = items.map((item, index) => 
+        this.state.selectableItems = items.map((item, index) => 
                 <ListItem item={item} />);
+        */
     }
 
     render() {
@@ -243,28 +294,38 @@ class DocumentationViewer extends Component {
                         <div className={`browserNavigation lightBlue`}>
                             <div className={`navigation`}>
 
-                                {this.state.breadcrumbs.map((crumb) => 
-                                    <div className={`breadcrumb`}>
-                                        <a className={`breadcrumbLink`} >{crumb === "" ? "/" : crumb}</a>
-                                    </div>
-                                )}
+                                {
+                                    this.state.breadcrumbs.map((crumb, index) => 
+                                        <div className={`breadcrumb`}>
+                                            <a className={`breadcrumbLink`}
+                                                onClick={this.handleBreadcrumClick.bind(this, index)}
+                                             >{crumb.name}</a>
+                                        </div>
+                                    )
+                                }
 
                             </div>
                         </div>
 
                         <ul className={`list lightBlue`}>
-                            {this.items.map((item, index) => 
+                            {
+                                this.state.top.contents.map((file, index) => 
+
                                 <li className={index == this.state.index ? `darkBlue` : `lightBlue`} 
                                     key={index.toString()} 
-                                    onClick={this.handleClick.bind(this, index)}>
-
-                                    {item}
+                                    onClick={this.handleListItemClick.bind(this, index)}
+                                    >
+                                    <ListItem item={file}/>
                                 </li>
-                            )}
+                                
+                            ) 
+                            }
                         </ul>
 
                         <div className={`viewer darkBlue`}>
-                            {this.state.rend}
+                                <Renderable item={this.state.top
+                                    .contents[this.state.index]} 
+                                    select={this.renderableSelected}/>
                         </div>
 
                     </div>

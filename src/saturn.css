@@ -226,6 +226,7 @@ Temp documentation prototype
     border-top: 2px solid #152515;
     border-bottom: 2px solid #152515;
     border-left: 2px solid #152515;
+    cursor: pointer;
 }
 
 .breadcrumb:last-child {
