@@ -205,17 +205,20 @@ class DocumentationViewer extends Component {
         ];
 
         this.select = (file) => {
-            console.log(file);
+            this.setState(Object.assign(this.state, {
+                breadcrumbs: file.fullPath.split("/")})
+            );
         };
 
         this.renderables = items.map((item) => <Renderable item={item} select={this.select} />);
-        this.state = {rend: this.renderables[0], index: 0};
+        this.state = {rend: this.renderables[0], index: 0, breadcrumbs: [""]};
 
         this.handleClick = function (index, e) {
 
             this.setState({
                 rend: this.renderables[index],
-                index: index
+                index: index,
+                breadcrumbs: this.state.breadcrumbs
             });
         };
 
@@ -240,17 +243,12 @@ class DocumentationViewer extends Component {
                         <div className={`browserNavigation lightBlue`}>
                             <div className={`navigation`}>
 
-                                <div className={`breadcrumb`}>
-                                    <a className={`breadcrumbLink`} >/</a>
-                                </div>
+                                {this.state.breadcrumbs.map((crumb) => 
+                                    <div className={`breadcrumb`}>
+                                        <a className={`breadcrumbLink`} >{crumb === "" ? "/" : crumb}</a>
+                                    </div>
+                                )}
 
-                                <div className={`breadcrumb`}>
-                                    <a className={`breadcrumbLink`} >services</a>
-                                </div>
-
-                                <div className={`breadcrumb darkBlue`}>
-                                    <a className={`breadcrumbLink darkBlue`} >apollo</a>
-                                </div>
                             </div>
                         </div>
 
