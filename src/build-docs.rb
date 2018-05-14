@@ -2,7 +2,7 @@
  #   |filename|
 
 #    if File.file? filename
-        filename = "application.h"
+        filename = "text.h"
         lines = File.readlines filename
 
         puts filename
@@ -28,6 +28,12 @@
                         end
                     end
 
+                #function declaration
+                when /\A\s*([[:alpha:]][[:graph:]]+)\s+([[:alpha:]][[:graph:]]+)\((.*)\)\s+;\s+$/
+                    returnType, name, parameters = $1, $2, $3
+
+                    puts "declare #{name}"
+
                 #possible constructor with initiaizer list
                 when /\A\s*([[:alpha:]][[:graph:]]+)\((.*)\)(\s+$|\s+{\s+$)/
                     name = $1
@@ -39,12 +45,12 @@
                     end
 
                 #class with no inheritance
-                when /\As*class\s*([[:alpha:]][[:graph:]]*)\s*{\s+$/
-                    puts "class #{$1}"
+                when /\As*(class|struct)\s*([[:alpha:]][[:graph:]]*)\s*{\s+$/
+                    puts "#{$1} #{$2}"
 
                 #class that inherits something
-                when /\A\s*class\s*([[:alpha:]][[:graph:]]*)\s*:\s*public\s*([[:alpha:]][[:graph:]]*)\s*{\s+$/
-                    puts "class #{$1} inherits #{$2}"
+                when /\A\s*(class|struct)\s*([[:alpha:]][[:graph:]]*)\s*:\s*public\s*([[:alpha:]][[:graph:]]*)\s*{\s+$/
+                    puts "#{$1} #{$2} inherits #{$3}"
             end
         }
 #    end
