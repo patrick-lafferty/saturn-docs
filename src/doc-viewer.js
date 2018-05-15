@@ -29,13 +29,6 @@ import React, {Component} from 'react';
 import style from './saturn.css';
 
 class Function extends Component {
-    constructor(props) {
-        super(props);
-
-        this.name = props.name;
-        this.signature = props.signature;
-        this.description = props.description;
-    }
 
     render() {
         return (
@@ -43,14 +36,29 @@ class Function extends Component {
                 <section className={`code`}>
                     <div className={`function`}>
                         <p className={`functionName darkBlue`}>
-                            {this.name}
+                            {this.props.name}
                         </p>
-                        <p className={`functionSignature`}>
-                            {this.signature}
-                        </p>
+
+                        <div className={`functionParameterList`}>
+                            <p>(</p>
+
+                            {this.props.signature.map((s, index) => 
+                                s.link ? <a key={index} href={'#' + s.link}>{s.type}{index < this.props.signature.length - 1 ? ',' : ''}</a>
+                                    : <p key={index}>{s.type}{index < this.props.signature.length - 1 ? ',' : ''}</p>
+                            )}
+
+                            <p>) -> </p>
+
+                            {
+                            this.props.return.link ? 
+                                <a href={'#' + this.props.return.link}>{this.props.return.type}</a>
+                                : <p>{this.props.return.type}</p>
+                            }
+
+                        </div>
                     </div>
 
-                    <p>{this.description}</p>
+                    <p>{this.props.description}</p>
                 </section>
             </li>
         );
@@ -67,17 +75,21 @@ class Class extends Component {
                     <p>{this.props.data.classComment}</p>
                 }
 
+                {this.props.data.publicMethods.length > 0 &&
                 <section>
                     <p className={`classMethods`}>Public Methods</p>
 
                     <ul>
-                        {this.props.data.publicMethods.map(f =>
-                            <Function key={f.signature} name={f.name} signature={f.signature} description={f.description} />
+                        {this.props.data.publicMethods.map((f, index) =>
+                            <Function key={index} name={f.name} 
+                                signature={f.signature} return={f.return}
+                                description={f.description} />
                         )}
 
                     </ul>
 
                 </section>
+                }
 
             </section>
         );
@@ -109,7 +121,10 @@ class File extends Component {
 
                     <ul>
                         {this.props.functions.map((f) => 
-                        <Function key={f.signature} name={f.name} signature={f.signature} description={f.description} />)}
+                        <Function key={f.signature} 
+                            name={f.name} 
+                            signature={f.signature} return={f.return}
+                            description={f.description} />)}
                     </ul>
 
                 </section>
@@ -142,9 +157,6 @@ class Directory extends Component {
     }
 }
 
-/*
-Can be a directory, file, or a class
-*/
 class ListItem extends Component {
 
     render() {
@@ -262,12 +274,29 @@ class DocumentationViewer extends Component {
     constructor(props) {
         super(props);
 
-        let kernel = createDummyDir("kernel");
-        let services = createDummyDir("services");
-        let applications = createDummyDir("applications");
+        window.onpopstate = () => {
+            if (window.location.hash.length == 0) return;
 
-        //let topLevel = createDummyDir("/", 0);
-        //topLevel.contents = [applications, services, kernel];
+            let splits = window.location.hash.split("/");
+            let subdirs = splits.slice(1, -1);
+            let crumbs = [topLevel];
+            let top = crumbs[0];
+
+            subdirs.forEach(s => {
+                let index = top.contents.findIndex(d => d.name == s);
+                crumbs.push(top.contents[index]);
+                top = top.contents[index];
+            });
+
+            let filename = splits.pop();
+            let fileIndex = top.contents.findIndex(f => f.name == filename);
+
+            this.setState({
+                breadcrumbs: crumbs,
+                top: top,
+                index: fileIndex
+            });
+        };
 
         this.state = {
             breadcrumbs: [topLevel],
@@ -275,18 +304,27 @@ class DocumentationViewer extends Component {
             index: 0
         };
 
+        this.updateUrl = (breadcrumbs, top, index) => {
+
+            let url = breadcrumbs.map(b => b.name).join("/");
+            url += "/" + top.contents[index].name;
+            window.location.hash = url;
+        };
+
         this.handleListItemClick = function (index, e) {
-            this.setState(Object.assign(this.state, {index: index}));
+
+            this.updateUrl(this.state.breadcrumbs, this.state.top, index);
+            //this.setState(Object.assign(this.state, {index: index}));
         }
 
         this.handleBreadcrumClick = index => {
             let crumbs = this.state.breadcrumbs.slice(0, index + 1);
-
-            this.setState({
+            this.updateUrl(crumbs, crumbs[crumbs.length - 1], 0);
+            /*this.setState({
                 breadcrumbs: crumbs,
                 top: crumbs[crumbs.length - 1],
                 index: 0
-            });
+            });*/
         };
 
         this.renderableSelected = (file, index) => {
@@ -295,11 +333,12 @@ class DocumentationViewer extends Component {
             let crumbs = this.state.breadcrumbs;
             crumbs.push(parent);
 
-            this.setState({
+            /*this.setState({
                 breadcrumbs: crumbs,
                 top: parent,
                 index: index
-            });
+            });*/
+            this.updateUrl(crumbs, parent, index);
         };
     }
 
@@ -325,7 +364,7 @@ class DocumentationViewer extends Component {
                                         <div key={index} className={`breadcrumb`}>
                                             <a className={`breadcrumbLink`}
                                                 onClick={this.handleBreadcrumClick.bind(this, index)}
-                                             >{crumb.name}</a>
+                                             >{crumb.name ? crumb.name : "/"}</a>
                                         </div>
                                     )
                                 }
