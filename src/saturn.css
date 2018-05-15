@@ -256,6 +256,7 @@ Temp documentation prototype
     flex-direction: column;
     grid-area: list;
     padding: 0rem;
+    overflow-y: auto;
 }
 
 li {
@@ -307,9 +308,19 @@ li {
     margin: 1rem;
 }
 
-.codeLink {
-    font-size: 1.8rem;
+.function {
+    display: flex;
+}
+
+.functionName {
+    font-size: 1.6rem;
     font-family: "Oswald";
+    font-size: 2.0rem;
+}
+
+.functionSignature {
+    text-align: right;
+    width: 100%;
 }
 
 .directoryContents {
@@ -354,6 +365,7 @@ li {
 .classMethods {
     font-family: "Oswald";
     font-size: 2.0rem;
+    margin: 1rem;
 }
 
 .noMargin {

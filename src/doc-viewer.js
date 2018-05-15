@@ -32,6 +32,7 @@ class Function extends Component {
     constructor(props) {
         super(props);
 
+        this.name = props.name;
         this.signature = props.signature;
         this.description = props.description;
     }
@@ -40,9 +41,14 @@ class Function extends Component {
         return (
             <li>
                 <section className={`code`}>
-                    <a className={`codeLink darkBlue`}>
-                        {this.signature}
-                    </a>
+                    <div className={`function`}>
+                        <p className={`functionName darkBlue`}>
+                            {this.name}
+                        </p>
+                        <p className={`functionSignature`}>
+                            {this.signature}
+                        </p>
+                    </div>
 
                     <p>{this.description}</p>
                 </section>
@@ -66,7 +72,7 @@ class Class extends Component {
 
                     <ul>
                         {this.props.data.publicMethods.map(f =>
-                            <Function key={f.signature} signature={f.signature} description={f.description} />
+                            <Function key={f.signature} name={f.name} signature={f.signature} description={f.description} />
                         )}
 
                     </ul>
@@ -83,6 +89,8 @@ class File extends Component {
     render() {
         return (
             <section className={`file`}>
+                {this.props.classes.length > 0 &&
+
                 <section>
                     <h1 className={`noMargin blueBorderBottom`}>Classes</h1>
 
@@ -93,16 +101,19 @@ class File extends Component {
                     </ul>
 
                 </section>
+                }
 
+                {this.props.functions.length > 0 &&
                 <section>
                     <h1 className={`noMargin blueBorderBottom`}>Free Functions</h1>
 
                     <ul>
                         {this.props.functions.map((f) => 
-                        <Function key={f.signature} signature={f.signature} description={f.description} />)}
+                        <Function key={f.signature} name={f.name} signature={f.signature} description={f.description} />)}
                     </ul>
 
                 </section>
+                }
             </section>
         );
     }
@@ -196,17 +207,19 @@ function createDummyFile() {
 
     let name = getName();
 
-    let file = {
+    let file = {type: 'file', classType: 'fileType', name: 'text.h', contents: {classes: [{name: 'FaceCache', classComment: '', publicMethods: [{name: 'addCache', signature: '(int, Apollo::Text::Style, uint32_t) -> void', description: ''}, {name: 'getGlyphCache', signature: '(Apollo::Text::Style, uint32_t) -> std::optional<Cache *>', description: ''}]}, {name: 'Renderer', classComment: '    Renderer handles the layout, positioning and rendering of text    into a window\'s framebuffer    ', publicMethods: [{name: 'drawText', signature: '(const Apollo::Text::TextLayout &, const Apollo::Elements::Bounds &, const Apollo::Elements::Bounds &, uint32_t) -> void', description: '        Renders a prepared text layout to the stored window\'s framebuffer,        with alpha blending.        '}, {name: 'layoutText', signature: '(const char *, uint32_t, uint32_t, Apollo::Text::Style, bool, uint32_t) -> Apollo::Text::TextLayout', description: '        Prepares each glyph\'s bitmap with FreeType, positions each        glyph with optional kerning, and applies line wrapping.        Allows the use of ANSI escape sequences in text to change        the colour of glyphs.        '}]}], freeFunctions: [{name: 'createRenderer', signature: '(Apollo::Window *) -> Apollo::Text::Renderer *', description: ''}]}};
+
+    let file2 = {
         type: "file",
         classType: "fileType",
         name: name + ".cpp",
 
         contents: {
             classes: [
-                {name: 'FaceCache', classComment: '', publicMethods: [{signature: 'void addCache(int, Apollo::Text::Style, uint32_t)', description: ''}, {signature: 'std::optional<Cache *> getGlyphCache(Apollo::Text::Style, uint32_t)', description: ''}]}, {name: 'Renderer', classComment: '    Renderer handles the layout, positioning and rendering of text    into a window\'s framebuffer    ', publicMethods: [{signature: 'void drawText(const Apollo::Text::TextLayout &, const Apollo::Elements::Bounds &, const Apollo::Elements::Bounds &, uint32_t)', description: '        Renders a prepared text layout to the stored window\'s framebuffer,        with alpha blending.        '}, {signature: 'Apollo::Text::TextLayout layoutText(const char *, uint32_t, uint32_t, Apollo::Text::Style, bool, uint32_t)', description: '        Prepares each glyph\'s bitmap with FreeType, positions each        glyph with optional kerning, and applies line wrapping.        Allows the use of ANSI escape sequences in text to change        the colour of glyphs.        '}]}
+                {name: 'FaceCache', classComment: '', publicMethods: [{name: 'addCache', signature: '(int, Apollo::Text::Style, uint32_t) -> void', description: ''}, {name: 'getGlyphCache', signature: '(Apollo::Text::Style, uint32_t) -> std::optional<Cache *>', description: ''}]}, {name: 'Renderer', classComment: '    Renderer handles the layout, positioning and rendering of text    into a window\'s framebuffer    ', publicMethods: [{name: 'drawText', signature: '(const Apollo::Text::TextLayout &, const Apollo::Elements::Bounds &, const Apollo::Elements::Bounds &, uint32_t) -> void', description: '        Renders a prepared text layout to the stored window\'s framebuffer,        with alpha blending.        '}, {name: 'layoutText', signature: '(const char *, uint32_t, uint32_t, Apollo::Text::Style, bool, uint32_t) -> Apollo::Text::TextLayout', description: '        Prepares each glyph\'s bitmap with FreeType, positions each        glyph with optional kerning, and applies line wrapping.        Allows the use of ANSI escape sequences in text to change        the colour of glyphs.        '}]}
             ],
             freeFunctions: [
-                {signature: 'Apollo::Text::Renderer * createRenderer(Apollo::Window *)', description: ''},
+                {name: 'createRenderer', signature: '(Apollo::Window *) -> Apollo::Text::Renderer *', description: ''}
                 
             ]
         }
@@ -242,6 +255,8 @@ function createDummyDir(name, remaining) {
     return dir;
 }
 
+import topLevel from './db.js';
+
 class DocumentationViewer extends Component {
 
     constructor(props) {
@@ -251,8 +266,8 @@ class DocumentationViewer extends Component {
         let services = createDummyDir("services");
         let applications = createDummyDir("applications");
 
-        let topLevel = createDummyDir("/", 0);
-        topLevel.contents = [applications, services, kernel];
+        //let topLevel = createDummyDir("/", 0);
+        //topLevel.contents = [applications, services, kernel];
 
         this.state = {
             breadcrumbs: [topLevel],
