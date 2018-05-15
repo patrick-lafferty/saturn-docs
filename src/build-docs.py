@@ -28,15 +28,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import clang.cindex
 import sys
-import json
+import os
 from clang.cindex import *
-
-def search(cursor):
-    if "saturn" in cursor.location.file:
-        print cursor.spelling
-
-def is_saturn(node):
-    return node.location.file is not None and "saturn" in node.location.file.name
 
 class Constructor:
 
@@ -274,7 +267,6 @@ class Namespace:
 
     def collect(self, classes, functions):
 
-        #if "saturn/src" in self.node.location.file.name:
         if "saturn/src" in self.mainFile:
             for x in self.classes:
                 if not x.isEmpty():
@@ -314,7 +306,7 @@ def recurse(toplevelNamespaces, node, mainFile, indent = 0):
         for c in node.get_children():
             recurse(toplevelNamespaces, c, mainFile, indent + 1)
     
-def createFileJson(name, toplevelNamespaces): # classes, functions):
+def createFileJson(name, toplevelNamespaces): 
 
     classes = []
     functions = []
@@ -350,8 +342,6 @@ def parseFile(filename, fullpath):
 
     return [filename, toplevelNamespaces]
 
-import os
-
 def parseDirectory(name, directory):
 
     fileJsons = []
@@ -375,8 +365,6 @@ def parseDirectory(name, directory):
 
     return [name, directories, parsedFiles]
 
-parsedDirs = parseDirectory("", "/home/pat/projects/saturn/src")
-
 def jsonifyDirectory(directory):
     fileJsons = []
     parsedFiles = directory[2]
@@ -389,15 +377,16 @@ def jsonifyDirectory(directory):
         directoryJsons.append(subdir)
 
     for file in parsedFiles:
-        json = createFileJson(file[0], file[1]) #, file[2])
+        json = createFileJson(file[0], file[1])
         fileJsons.append(json)
 
     template = "{{type: 'dir',\n classType: 'dirType',\n name: '{0}',\n contents: [{1}]}}"
     return template.format(name, ", ".join(directoryJsons + fileJsons))
 
+parsedDirs = parseDirectory("", "/home/pat/projects/saturn/src")
 result = jsonifyDirectory(parsedDirs)
 
-with open('db.js', 'w') as output:
+with open('documentation.js', 'w') as output:
     template = "let topLevel = {0};"
 
     output.write(template.format(result))

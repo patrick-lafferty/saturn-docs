@@ -190,7 +190,7 @@ class Renderable extends Component {
     }
 }
 
-import topLevel from './db.js';
+import topLevel from './documentation.js';
 
 class DocumentationViewer extends Component {
 
@@ -263,7 +263,9 @@ class DocumentationViewer extends Component {
                             <div className={`tabBar`}>
 
                                 <div className={`tab lightBlue`}>Browse</div>
+                                {false && 
                                 <div className={`tab`}>Search</div>
+                                }
 
                             </div>
                         </div>
