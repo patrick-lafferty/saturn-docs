@@ -53,10 +53,10 @@ class Method:
     def toJson(self):
         
         params = ", ".join([x.type.spelling for x in self.parameters])
-        signature = "{0} {1}({2})".format(self.node.result_type.spelling, self.name, params)
+        signature = "({0}) -> {1}".format(params, self.node.result_type.spelling)
 
-        template = "{{signature: '{0}', description: '{1}'}}"
-        return template.format(signature, self.comment)
+        template = "{{name: '{0}',\n signature: '{1}',\n description: '{2}'}}"
+        return template.format(self.name, signature, self.comment)
 
     def show(self, indent):
 
@@ -118,7 +118,7 @@ class Class:
         for x in self.publicMethods:
             publicMethodJsons.append(x.toJson())
 
-        template = "{{name: '{0}', classComment: '{1}', publicMethods: [{2}]}}"
+        template = "{{name: '{0}',\n classComment: '{1}',\n publicMethods: [{2}]}}"
         return template.format(self.name, self.comment, ", ".join(publicMethodJsons))
 
     def show(self, indent):
@@ -156,7 +156,7 @@ class Class:
 
 class Namespace:
 
-    def __init__(self, node):
+    def __init__(self, node, file):
         self.node = node
         self.classes = []
         self.functions = []
@@ -164,18 +164,22 @@ class Namespace:
         self.namespaces = []
         self.nodes = []
 
-        self.append(node)
+        self.append(node, file)
 
-    def append(self, node):
+    def append(self, node, mainFile):
 
         for child in node.get_children():
+            if child.location.file.name != mainFile:
+                continue
 
             if child.kind == CursorKind.CLASS_DECL:
+                self.classes.append(Class(child))
+            elif child.kind == CursorKind.CLASS_TEMPLATE:
                 self.classes.append(Class(child))
             elif child.kind == CursorKind.STRUCT_DECL:
                 self.structs.append(Class(child, True))
             elif child.kind == CursorKind.NAMESPACE:
-                self.namespaces.append(Namespace(child))
+                self.namespaces.append(Namespace(child, mainFile))
             elif child.kind == CursorKind.FUNCTION_DECL:
                 self.functions.append(Method(child))
             else:
@@ -206,53 +210,82 @@ class Namespace:
                 if not x.isEmpty():
                     classes.append(x.toJson())
 
+            for x in self.structs:
+                if not x.isEmpty():
+                    classes.append(x.toJson())
+
             for x in self.functions:
                 functions.append(x.toJson())
 
         for x in self.namespaces:
             x.collect(classes, functions)
 
-toplevelNamespaces = {}
-
-def recurse(node, indent = 0):
+def recurse(toplevelNamespaces, node, mainFile, indent = 0):
 
     if node.kind == CursorKind.NAMESPACE and "saturn/src" in node.location.file.name:
 
         if node.spelling in toplevelNamespaces:
-            toplevelNamespaces[node.spelling].append(node)
+            toplevelNamespaces[node.spelling].append(node, mainFile)
         else:
-            toplevelNamespaces[node.spelling] = (Namespace(node))
-    #if is_saturn(node):
-     #   print " " * indent, node.kind, " ", node.spelling
+            toplevelNamespaces[node.spelling] = (Namespace(node, mainFile))
     else:
 
         for c in node.get_children():
-            recurse(c, indent + 1)
+            recurse(toplevelNamespaces, c, mainFile, indent + 1)
     
+def createFileJson(name, classes, functions):
+    contentsTemplate = "{{classes: [{0}], freeFunctions: [{1}]}}"
+    contents = contentsTemplate.format(", ".join(classes), ", ".join(functions))
 
-index = clang.cindex.Index.create()
-translationUnit = index.parse("../../saturn/src/services/apollo/lib/text.h",
-    ['-x', 'c++', '-std=c++1z',
-        '-I/home/pat/projects/saturn-libc++/include/c++/v1',
-        '-fparse-all-comments'
-    ])
-    #sys.argv[1], ['-x', 'c++'])
+    template = "\n{{type: 'file',\n classType: 'fileType',\n name: '{0}',\n contents: {1}}}"
+    return template.format(name, contents)
 
-for x in translationUnit.diagnostics:
-    print x
+def parseFile(filename, fullpath):
 
-recurse(translationUnit.cursor)
-classes = []
-functions = []
+    index = clang.cindex.Index.create()
+    translationUnit = index.parse(fullpath,
+        ['-x', 'c++', '-std=c++1z',
+            '-I/home/pat/projects/saturn-libc++/include/c++/v1',
+            '-I/home/pat/projects/saturn/src',
+            '-fparse-all-comments'
+        ])
 
-for name, ns in toplevelNamespaces.iteritems():
-    ns.collect(classes, functions)
+    for x in translationUnit.diagnostics:
+        print x
 
-classesJson = ", ".join(classes)
-functionsJson = ", ".join(functions)
+    toplevelNamespaces = {}
 
-print classesJson
-print ""
-print functionsJson
+    recurse(toplevelNamespaces, translationUnit.cursor, fullpath)
+    classes = []
+    functions = []
 
-#toplevelNamespaces['Apollo'].show(0)
+    for name, ns in toplevelNamespaces.iteritems():
+        ns.collect(classes, functions)
+
+    return createFileJson(filename, classes, functions)
+
+import os
+
+def parseDirectory(directory):
+
+    fileJsons = []
+
+    for root, subdirs, files in os.walk(directory):
+        for file in files:
+            if file.endswith(".h"):    
+                fileJsons.append(parseFile(file, os.path.join(root, file)))
+
+    name = directory[directory.find("src") + 4:]
+
+    template = "let topLevel = {{type: 'dir',\n classType: 'dirType',\n name: '{0}',\n contents: [{1}]}};"
+    return template.format(name, ", ".join(fileJsons))
+
+
+#result = parseFile("application.h", "/home/pat/projects/saturn/src/services/apollo/lib/application.h")
+#print result
+
+result = parseDirectory("/home/pat/projects/saturn/src/services/apollo/lib/")
+
+with open('db.js', 'w') as output:
+    output.write(result)
+    output.write("export default topLevel")
