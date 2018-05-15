@@ -51,14 +51,59 @@ class Function extends Component {
     }
 }
 
+class Class extends Component {
+    render() {
+        return (
+            <section className={`class`}>
+                <h1 className={`className blueBorderBottom`}>{this.props.data.name}</h1>
+
+                {this.props.data.classComment && 
+                    <p>{this.props.data.classComment}</p>
+                }
+
+                <section>
+                    <p className={`classMethods`}>Public Methods</p>
+
+                    <ul>
+                        {this.props.data.publicMethods.map(f =>
+                            <Function key={f.signature} signature={f.signature} description={f.description} />
+                        )}
+
+                    </ul>
+
+                </section>
+
+            </section>
+        );
+    }
+}
+
 class File extends Component {
     
     render() {
         return (
-            <ul>
-                {this.props.functions.map((f) => 
-            <Function key={f.signature} signature={f.signature} description={f.description} />)}
-            </ul>
+            <section className={`file`}>
+                <section>
+                    <h1 className={`noMargin blueBorderBottom`}>Classes</h1>
+
+                    <ul className={`noPadding`}>
+                        {this.props.classes.map(c =>
+                            <Class key={c.name} data={c} />
+                        )}
+                    </ul>
+
+                </section>
+
+                <section>
+                    <h1 className={`noMargin blueBorderBottom`}>Free Functions</h1>
+
+                    <ul>
+                        {this.props.functions.map((f) => 
+                        <Function key={f.signature} signature={f.signature} description={f.description} />)}
+                    </ul>
+
+                </section>
+            </section>
         );
     }
 }
@@ -109,7 +154,8 @@ class Renderable extends Component {
 
         switch (this.props.item.type) {
             case 'file': {
-                return <File functions={this.props.item.contents} />;
+                return <File classes={this.props.item.contents.classes} 
+                    functions={this.props.item.contents.freeFunctions} />;
                 break;
             }
             case 'dir': {
@@ -155,12 +201,15 @@ function createDummyFile() {
         classType: "fileType",
         name: name + ".cpp",
 
-        contents: [
-            {
-                signature: createDummySig(name),
-                description: "the main entry point"
-            }
-        ]
+        contents: {
+            classes: [
+                {name: 'FaceCache', classComment: '', publicMethods: [{signature: 'void addCache(int, Apollo::Text::Style, uint32_t)', description: ''}, {signature: 'std::optional<Cache *> getGlyphCache(Apollo::Text::Style, uint32_t)', description: ''}]}, {name: 'Renderer', classComment: '    Renderer handles the layout, positioning and rendering of text    into a window\'s framebuffer    ', publicMethods: [{signature: 'void drawText(const Apollo::Text::TextLayout &, const Apollo::Elements::Bounds &, const Apollo::Elements::Bounds &, uint32_t)', description: '        Renders a prepared text layout to the stored window\'s framebuffer,        with alpha blending.        '}, {signature: 'Apollo::Text::TextLayout layoutText(const char *, uint32_t, uint32_t, Apollo::Text::Style, bool, uint32_t)', description: '        Prepares each glyph\'s bitmap with FreeType, positions each        glyph with optional kerning, and applies line wrapping.        Allows the use of ANSI escape sequences in text to change        the colour of glyphs.        '}]}
+            ],
+            freeFunctions: [
+                {signature: 'Apollo::Text::Renderer * createRenderer(Apollo::Window *)', description: ''},
+                
+            ]
+        }
     };
 
     return file;

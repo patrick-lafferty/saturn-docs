@@ -300,6 +300,7 @@ li {
     display: flex;
     flex-direction: column;
     grid-area: viewer;
+    overflow-y: auto;
 }
 
 .code {
@@ -327,6 +328,40 @@ li {
 
 .directoryChild > p {
     margin: 0;
+}
+
+.file {
+    margin: 1rem 1rem;
+}
+
+.blueBorderBottom {
+    border-bottom: 3px solid #50B3F2;
+}
+
+.class {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+}
+
+.className {
+    margin: 1rem;
+    align-self: center;
+    width: 50%;
+    text-align: center;
+}
+
+.classMethods {
+    font-family: "Oswald";
+    font-size: 2.0rem;
+}
+
+.noMargin {
+    margin: 0;
+}
+
+.noPadding {
+    padding: 0;
 }
 
 /*
