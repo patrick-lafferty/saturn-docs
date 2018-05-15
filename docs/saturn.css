@@ -281,20 +281,12 @@ li {
     text-align: center;
 }
 
-.classType {
+.fileType {
     background: coral;
 }
 
-.funcType {
-    background: chartreuse;
-}
-
-.fileType {
-    background: mediumslateblue;
-}
-
 .dirType {
-    background: mistyrose;
+    background: chartreuse;
 }
 
 .viewer {
@@ -306,21 +298,35 @@ li {
 
 .code {
     margin: 1rem;
+    cursor: default;
 }
 
 .function {
-    display: flex;
 }
 
 .functionName {
     font-size: 1.6rem;
     font-family: "Oswald";
     font-size: 2.0rem;
+    margin: 0.5rem 0rem;
 }
 
 .functionSignature {
     text-align: right;
     width: 100%;
+}
+
+.functionParameterList {
+    display: flex;
+    align-items: center;
+    font-size: 1.4rem;
+    font-family: "Exo 2";
+    flex-wrap: wrap;
+}
+
+.functionParameterList > * {
+    margin: 0;
+    margin-right: 0.5rem;
 }
 
 .directoryContents {
