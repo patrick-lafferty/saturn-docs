@@ -1,3 +1,31 @@
+"""
+Copyright (c) 2018, Patrick Lafferty
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the copyright holder nor the names of its 
+      contributors may be used to endorse or promote products derived from 
+      this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR 
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+
 import clang.cindex
 import sys
 import json
@@ -20,6 +48,15 @@ class Constructor:
 
 def cleanComment(comment):
     return comment.replace('\r\n', '').replace('/*', '').replace('*/', '').replace('\'', '\\\'')
+
+def stripQualifiers(name):
+    if name.endswith(" *") or name.endswith(" &"):
+        name = name[0:-2]
+
+    if name.startswith("const "):
+        name = name[6:]
+
+    return name
 
 class Method:
 
@@ -52,11 +89,20 @@ class Method:
 
     def toJson(self):
         
-        params = ", ".join([x.type.spelling for x in self.parameters])
-        signature = "({0}) -> {1}".format(params, self.node.result_type.spelling)
+        params = [x.type.spelling for x in self.parameters]
+        paramTemplate = "{{link: '{0}', type: '{1}'}}"
+        parameters = []
 
-        template = "{{name: '{0}',\n signature: '{1}',\n description: '{2}'}}"
-        return template.format(self.name, signature, self.comment)
+        for x in params:
+            unqualifiedName = stripQualifiers(x)            
+            link = fullyQualifiedLocations[unqualifiedName] if unqualifiedName in fullyQualifiedLocations else ""
+            parameters.append(paramTemplate.format(link, x))
+        
+        returnTypeName = stripQualifiers(self.node.result_type.spelling)
+        returnLink = fullyQualifiedLocations[returnTypeName] if returnTypeName in fullyQualifiedLocations else ""
+
+        template = "{{name: '{0}',\n signature: [{1}],\nreturn: {2},\n description: '{3}'}}"
+        return template.format(self.name, ", ".join(parameters), paramTemplate.format(returnLink, self.node.result_type.spelling), self.comment)
 
     def show(self, indent):
 
@@ -153,37 +199,60 @@ class Class:
             for name, type in self.protectedFields.iteritems():
                 print "{0} {1}: {1}".format(" " * (indent + 2), name, type)
 
+fullyQualifiedLocations = {}
+rootLength = len("/home/pat/projects/saturn/src")
+
+def addClassLocation(parentName, path, location):
+
+    if "Memory::VirtualMemoryManager" in path:
+        print "VMM ", location
+
+    if parentName:
+        path = parentName + "::" + path
+
+    relativeLocation = location[rootLength:]
+
+    fullyQualifiedLocations[path] = relativeLocation
 
 class Namespace:
 
-    def __init__(self, node, file):
+    def __init__(self, node, file, parentName = ""):
         self.node = node
         self.classes = []
         self.functions = []
         self.structs = []
         self.namespaces = []
         self.nodes = []
+        self.parentName = parentName
+        self.mainFile = file
 
         self.append(node, file)
 
     def append(self, node, mainFile):
 
         for child in node.get_children():
+
             if child.location.file.name != mainFile:
                 continue
 
-            if child.kind == CursorKind.CLASS_DECL:
+            if child.kind == CursorKind.CLASS_DECL and child.is_definition():
                 self.classes.append(Class(child))
+                addClassLocation(self.parentName, node.spelling + "::" + child.spelling, mainFile)
+
             elif child.kind == CursorKind.CLASS_TEMPLATE:
                 self.classes.append(Class(child))
-            elif child.kind == CursorKind.STRUCT_DECL:
+                addClassLocation(self.parentName, node.spelling + "::" + child.spelling, mainFile)
+
+            elif child.kind == CursorKind.STRUCT_DECL and child.is_definition():
                 self.structs.append(Class(child, True))
+                addClassLocation(self.parentName, node.spelling + "::" + child.spelling, mainFile)
+
             elif child.kind == CursorKind.NAMESPACE:
-                self.namespaces.append(Namespace(child, mainFile))
+                self.namespaces.append(Namespace(child, mainFile, node.spelling))
             elif child.kind == CursorKind.FUNCTION_DECL:
                 self.functions.append(Method(child))
             else:
-                print "unhandled child type ", child.kind
+                print "unhandled child type ", child.kind, child.spelling
                 pass
 
 
@@ -205,7 +274,8 @@ class Namespace:
 
     def collect(self, classes, functions):
 
-        if "saturn/src" in self.node.location.file.name:
+        #if "saturn/src" in self.node.location.file.name:
+        if "saturn/src" in self.mainFile:
             for x in self.classes:
                 if not x.isEmpty():
                     classes.append(x.toJson())
@@ -228,12 +298,30 @@ def recurse(toplevelNamespaces, node, mainFile, indent = 0):
             toplevelNamespaces[node.spelling].append(node, mainFile)
         else:
             toplevelNamespaces[node.spelling] = (Namespace(node, mainFile))
+
+    elif "libc" in mainFile:
+
+        for child in node.get_children():
+            if child.kind == CursorKind.UNEXPOSED_DECL:
+
+                if "libc" in toplevelNamespaces:
+                    toplevelNamespaces["libc"].append(child, mainFile)
+                else:
+                    toplevelNamespaces["libc"] = Namespace(child, mainFile)
+
     else:
 
         for c in node.get_children():
             recurse(toplevelNamespaces, c, mainFile, indent + 1)
     
-def createFileJson(name, classes, functions):
+def createFileJson(name, toplevelNamespaces): # classes, functions):
+
+    classes = []
+    functions = []
+
+    for nsname, ns in toplevelNamespaces.iteritems():
+        ns.collect(classes, functions)
+
     contentsTemplate = "{{classes: [{0}], freeFunctions: [{1}]}}"
     contents = contentsTemplate.format(", ".join(classes), ", ".join(functions))
 
@@ -247,6 +335,7 @@ def parseFile(filename, fullpath):
         ['-x', 'c++', '-std=c++1z',
             '-I/home/pat/projects/saturn-libc++/include/c++/v1',
             '-I/home/pat/projects/saturn/src',
+            '-Drestrict=__restrict',
             '-fparse-all-comments'
         ])
 
@@ -259,33 +348,57 @@ def parseFile(filename, fullpath):
     classes = []
     functions = []
 
-    for name, ns in toplevelNamespaces.iteritems():
-        ns.collect(classes, functions)
-
-    return createFileJson(filename, classes, functions)
+    return [filename, toplevelNamespaces]
 
 import os
 
-def parseDirectory(directory):
+def parseDirectory(name, directory):
 
     fileJsons = []
+    parsedFiles = []
+    directories = []
 
     for root, subdirs, files in os.walk(directory):
+
+        for dir in subdirs:
+            if dir == "applications" or dir == "userland" or dir == "freestanding" or dir == "hosted":
+                continue
+
+            subdir = parseDirectory(dir, os.path.join(root, dir))
+            directories.append(subdir)
+
         for file in files:
             if file.endswith(".h"):    
-                fileJsons.append(parseFile(file, os.path.join(root, file)))
+                parsedFiles.append(parseFile(file, os.path.join(root, file)))
 
-    name = directory[directory.find("src") + 4:]
+        break
 
-    template = "let topLevel = {{type: 'dir',\n classType: 'dirType',\n name: '{0}',\n contents: [{1}]}};"
-    return template.format(name, ", ".join(fileJsons))
+    return [name, directories, parsedFiles]
 
+parsedDirs = parseDirectory("", "/home/pat/projects/saturn/src")
 
-#result = parseFile("application.h", "/home/pat/projects/saturn/src/services/apollo/lib/application.h")
-#print result
+def jsonifyDirectory(directory):
+    fileJsons = []
+    parsedFiles = directory[2]
+    directories = directory[1]
+    directoryJsons = []
+    name = directory[0]
 
-result = parseDirectory("/home/pat/projects/saturn/src/services/apollo/lib/")
+    for dir in directories:
+        subdir = jsonifyDirectory(dir)
+        directoryJsons.append(subdir)
+
+    for file in parsedFiles:
+        json = createFileJson(file[0], file[1]) #, file[2])
+        fileJsons.append(json)
+
+    template = "{{type: 'dir',\n classType: 'dirType',\n name: '{0}',\n contents: [{1}]}}"
+    return template.format(name, ", ".join(directoryJsons + fileJsons))
+
+result = jsonifyDirectory(parsedDirs)
 
 with open('db.js', 'w') as output:
-    output.write(result)
+    template = "let topLevel = {0};"
+
+    output.write(template.format(result))
     output.write("export default topLevel")
