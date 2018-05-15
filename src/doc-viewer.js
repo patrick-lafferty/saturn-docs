@@ -190,83 +190,6 @@ class Renderable extends Component {
     }
 }
 
-/*
-from MDN
-*/
-function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
-}
-
-let names = [];
-
-for (let i = 200; i > 0; i--) {
-    names.push(i.toString());
-}
-
-function getName() {
-    return names.pop();
-}
-
-function createDummySig(name) {
-    let types = ["int", "void", "float"];
-
-    return types[getRandomInt(0, 3)] + " " + name + "()";
-}
-
-function createDummyFile() {
-
-    let name = getName();
-
-    let file = {type: 'file', classType: 'fileType', name: 'text.h', contents: {classes: [{name: 'FaceCache', classComment: '', publicMethods: [{name: 'addCache', signature: '(int, Apollo::Text::Style, uint32_t) -> void', description: ''}, {name: 'getGlyphCache', signature: '(Apollo::Text::Style, uint32_t) -> std::optional<Cache *>', description: ''}]}, {name: 'Renderer', classComment: '    Renderer handles the layout, positioning and rendering of text    into a window\'s framebuffer    ', publicMethods: [{name: 'drawText', signature: '(const Apollo::Text::TextLayout &, const Apollo::Elements::Bounds &, const Apollo::Elements::Bounds &, uint32_t) -> void', description: '        Renders a prepared text layout to the stored window\'s framebuffer,        with alpha blending.        '}, {name: 'layoutText', signature: '(const char *, uint32_t, uint32_t, Apollo::Text::Style, bool, uint32_t) -> Apollo::Text::TextLayout', description: '        Prepares each glyph\'s bitmap with FreeType, positions each        glyph with optional kerning, and applies line wrapping.        Allows the use of ANSI escape sequences in text to change        the colour of glyphs.        '}]}], freeFunctions: [{name: 'createRenderer', signature: '(Apollo::Window *) -> Apollo::Text::Renderer *', description: ''}]}};
-
-    let file2 = {
-        type: "file",
-        classType: "fileType",
-        name: name + ".cpp",
-
-        contents: {
-            classes: [
-                {name: 'FaceCache', classComment: '', publicMethods: [{name: 'addCache', signature: '(int, Apollo::Text::Style, uint32_t) -> void', description: ''}, {name: 'getGlyphCache', signature: '(Apollo::Text::Style, uint32_t) -> std::optional<Cache *>', description: ''}]}, {name: 'Renderer', classComment: '    Renderer handles the layout, positioning and rendering of text    into a window\'s framebuffer    ', publicMethods: [{name: 'drawText', signature: '(const Apollo::Text::TextLayout &, const Apollo::Elements::Bounds &, const Apollo::Elements::Bounds &, uint32_t) -> void', description: '        Renders a prepared text layout to the stored window\'s framebuffer,        with alpha blending.        '}, {name: 'layoutText', signature: '(const char *, uint32_t, uint32_t, Apollo::Text::Style, bool, uint32_t) -> Apollo::Text::TextLayout', description: '        Prepares each glyph\'s bitmap with FreeType, positions each        glyph with optional kerning, and applies line wrapping.        Allows the use of ANSI escape sequences in text to change        the colour of glyphs.        '}]}
-            ],
-            freeFunctions: [
-                {name: 'createRenderer', signature: '(Apollo::Window *) -> Apollo::Text::Renderer *', description: ''}
-                
-            ]
-        }
-    };
-
-    return file;
-}
-
-function createDummyDir(name, remaining) {
-
-    let numberOfChildren = getRandomInt(1, 5);
-
-    let dir = {
-        type: "dir",
-        classType: "dirType",
-        name: name,
-        contents: []
-    };
-
-    if (remaining > 0) {
-
-        for (let i = 0; i < numberOfChildren; i++) {
-            dir.contents.push(createDummyDir(remaining - 1));
-        }
-    }
-
-    numberOfChildren = getRandomInt(3, 8);
-
-    for (let i = 0; i < numberOfChildren; i++) {
-        dir.contents.push(createDummyFile());
-    }
-
-    return dir;
-}
-
 import topLevel from './db.js';
 
 class DocumentationViewer extends Component {
@@ -314,17 +237,11 @@ class DocumentationViewer extends Component {
         this.handleListItemClick = function (index, e) {
 
             this.updateUrl(this.state.breadcrumbs, this.state.top, index);
-            //this.setState(Object.assign(this.state, {index: index}));
         }
 
         this.handleBreadcrumClick = index => {
             let crumbs = this.state.breadcrumbs.slice(0, index + 1);
             this.updateUrl(crumbs, crumbs[crumbs.length - 1], 0);
-            /*this.setState({
-                breadcrumbs: crumbs,
-                top: crumbs[crumbs.length - 1],
-                index: 0
-            });*/
         };
 
         this.renderableSelected = (file, index) => {
@@ -333,11 +250,6 @@ class DocumentationViewer extends Component {
             let crumbs = this.state.breadcrumbs;
             crumbs.push(parent);
 
-            /*this.setState({
-                breadcrumbs: crumbs,
-                top: parent,
-                index: index
-            });*/
             this.updateUrl(crumbs, parent, index);
         };
     }
