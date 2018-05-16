@@ -197,8 +197,8 @@ class DocumentationViewer extends Component {
     constructor(props) {
         super(props);
 
-        window.onpopstate = () => {
-            if (window.location.hash.length == 0) return;
+        this.getStateFromHash = () => {
+            if (window.location.hash.length == 0) return false;
 
             let splits = window.location.hash.split("/");
             let subdirs = splits.slice(1, -1);
@@ -214,17 +214,42 @@ class DocumentationViewer extends Component {
             let filename = splits.pop();
             let fileIndex = top.contents.findIndex(f => f.name == filename);
 
-            this.setState({
+            return {
                 breadcrumbs: crumbs,
                 top: top,
                 index: fileIndex
-            });
+            };
+        };
+
+        window.onpopstate = () => {
+
+            let state = this.getStateFromHash();
+
+            if (state)
+                this.setState(state);
         };
 
         this.state = {
             breadcrumbs: [topLevel],
             top: topLevel,
-            index: 0
+            index: 0,
+            browse: true
+        };
+
+        this.setModeBrowse = () => {
+            this.setState({
+                breadcrumbs: [topLevel],
+                top: topLevel,
+                index: 0,
+                browse: true
+            });
+        };
+
+        this.setModeSearch = () => {
+            this.setState({
+                top: {contents: []},
+                browse: false
+            });
         };
 
         this.updateUrl = (breadcrumbs, top, index) => {
@@ -252,6 +277,14 @@ class DocumentationViewer extends Component {
 
             this.updateUrl(crumbs, parent, index);
         };
+
+        this.searchChanged = event => {
+            console.log(event.target.value);
+        };
+
+        if (window.location.hash.length > 0) {
+            this.state = Object.assign(this.state, this.getStateFromHash());
+        }
     }
 
     render() {
@@ -262,15 +295,16 @@ class DocumentationViewer extends Component {
                         <div className={`browserMenu darkBlue`}>
                             <div className={`tabBar`}>
 
-                                <div className={`tab lightBlue`}>Browse</div>
+                                <div onClick={this.setModeBrowse} className={"tab " + (this.state.browse ?  "lightBlue" : "")}>Browse</div>
                                 {false && 
-                                <div className={`tab`}>Search</div>
+                                <div onClick={this.setModeSearch} className={"tab " + (!this.state.browse ?  "lightBlue" : "")}>Search</div>
                                 }
 
                             </div>
                         </div>
 
-                        <div className={`browserNavigation lightBlue`}>
+                        <div className={`browserNavigation ` }>
+                            {this.state.browse && 
                             <div className={`navigation`}>
 
                                 {
@@ -284,6 +318,13 @@ class DocumentationViewer extends Component {
                                 }
 
                             </div>
+                            }
+
+                            {!this.state.browse && 
+                            <div className={`navigation`}>
+                                <input className={`searchBar`} onChange={this.searchChanged}/>
+                            </div>
+                            }
                         </div>
 
                         <ul className={`list lightBlue`}>
@@ -296,15 +337,17 @@ class DocumentationViewer extends Component {
                                     >
                                     <ListItem item={file}/>
                                 </li>
-                                
                             ) 
                             }
+
                         </ul>
 
                         <div className={`viewer darkBlue`}>
+                            {this.state.top.contents.length > 0 && 
                                 <Renderable item={this.state.top
                                     .contents[this.state.index]} 
                                     select={this.renderableSelected}/>
+                                }
                         </div>
 
                     </div>

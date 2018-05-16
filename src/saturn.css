@@ -220,6 +220,10 @@ Temp documentation prototype
     height: 100%;
 }
 
+.searchBar {
+    padding: 1rem;
+}
+
 .breadcrumb {
     transform: skewX(-15deg);
     padding: 0.3rem;
