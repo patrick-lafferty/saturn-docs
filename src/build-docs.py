@@ -142,6 +142,14 @@ class Class:
                     self.privateFields[child.spelling] = child.type.spelling
             elif child.kind == CursorKind.CXX_ACCESS_SPEC_DECL:
                 currentAccess = child.access_specifier
+
+            elif child.kind == CursorKind.FUNCTION_TEMPLATE:
+                if currentAccess == clang.cindex.AccessSpecifier.PUBLIC:
+                    self.publicMethods.append(Method(child))
+                elif currentAccess == clang.cindex.AccessSpecifier.PROTECTED:
+                    self.protectedMethods.append(Method(child))
+                else:
+                    self.privateMethods.append(Method(child))
             else:
                 pass
                 #KEEP THIS
@@ -244,6 +252,10 @@ class Namespace:
                 self.namespaces.append(Namespace(child, mainFile, node.spelling))
             elif child.kind == CursorKind.FUNCTION_DECL:
                 self.functions.append(Method(child))
+            elif child.kind == CursorKind.CXX_METHOD:
+                self.functions.append(Method(child))
+            elif child.kind == CursorKind.FUNCTION_TEMPLATE:
+                self.functions.append(Method(child))
             else:
                 print "unhandled child type ", child.kind, child.spelling
                 pass
@@ -293,13 +305,15 @@ def recurse(toplevelNamespaces, node, mainFile, indent = 0):
 
     elif "libc" in mainFile:
 
+        nsName = mainFile[mainFile.rfind("/") + 1:]
+
         for child in node.get_children():
             if child.kind == CursorKind.UNEXPOSED_DECL:
 
-                if "libc" in toplevelNamespaces:
-                    toplevelNamespaces["libc"].append(child, mainFile)
+                if nsName in toplevelNamespaces:
+                    toplevelNamespaces[nsName].append(child, mainFile)
                 else:
-                    toplevelNamespaces["libc"] = Namespace(child, mainFile)
+                    toplevelNamespaces[nsName] = Namespace(child, mainFile)
 
     else:
 
