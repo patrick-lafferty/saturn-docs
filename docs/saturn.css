@@ -85,15 +85,9 @@
 }
 
 .logoWrapper {
-    background: white;
     display: flex;
     justify-content: center;
     width: 100%;
-}
-
-.logo {
-    max-width: 800px;
-    max-height: 300px;
 }
 
 .tag {
